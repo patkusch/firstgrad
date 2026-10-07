@@ -25,14 +25,18 @@ def step(model, lr):
         p.data -= lr * p.grad
 
 
-def fit(model, xs, ys, loss_fn, lr=0.1, epochs=200, log_every=0):
+def fit(model, xs, ys, loss_fn, lr=0.1, epochs=200, log_every=0, optimizer=None):
+    """Plain descent at rate lr unless an optimizer from optim.py is given."""
     history = []
     for epoch in range(epochs):
         outputs = [model(x) for x in xs]
         loss = loss_fn(outputs, ys)
         model.zero_grad()
         loss.backward()
-        step(model, lr)
+        if optimizer:
+            optimizer.step()
+        else:
+            step(model, lr)
         history.append(loss.data)
         if log_every and epoch % log_every == 0:
             print(f"epoch {epoch:4d}  loss {loss.data:.4f}")

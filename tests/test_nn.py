@@ -50,3 +50,31 @@ class TestLearning(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestOptimizers(unittest.TestCase):
+    def test_first_step_matches_hand_arithmetic(self):
+        from firstgrad.optim import SGD, Adam, Momentum
+        from firstgrad.value import Value
+
+        for make, expected in [
+            (lambda p: SGD(p, 0.1), 1.0 - 0.1 * 4.0),
+            (lambda p: Momentum(p, 0.1, 0.9), 1.0 - 0.1 * 4.0),
+            (lambda p: Adam(p, 0.1), 1.0 - 0.1),  # first Adam step is lr in size
+        ]:
+            w = Value(1.0)
+            w.grad = 4.0
+            make([w]).step()
+            self.assertAlmostEqual(w.data, expected, places=6)
+
+    def test_adam_solves_what_plain_descent_cannot(self):
+        from firstgrad.optim import SGD, Adam
+
+        xs, ys = two_spirals(n_per_arm=30, turns=3.0)
+        scores = {}
+        for name, make in [("sgd", lambda p: SGD(p, 0.3)), ("adam", lambda p: Adam(p, 0.1))]:
+            model = MLP([2, 12, 12, 1], seed=3)
+            fit(model, xs, ys, log_loss, epochs=300, optimizer=make(model.parameters()))
+            scores[name] = accuracy(model, xs, ys)
+        self.assertLess(scores["sgd"], 0.75)
+        self.assertGreater(scores["adam"], 0.9)
