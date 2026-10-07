@@ -75,11 +75,40 @@ mix-ups are mostly the 8 being read as something else, which makes sense: an
 python3 -m examples.digits
 ```
 
+## Writing made-up names
+
+Given one letter, guess the next one. Do that over and over and you have a
+name-writer. It is tried two ways: counting which letter follows which in 68
+real names, and a network that learns the same thing. Both are scored on 69
+other names they never saw. The score is how surprised the model is by the real
+next letters, so lower is better, and blind guessing scores 3.30.
+
+| Method | Surprise on unseen names |
+|---|---|
+| Blind guessing | 3.30 |
+| Counting | 2.73 |
+| Network | 2.69 |
+
+The network ties with counting, which is the expected result: with only one
+letter of memory there is nothing more to learn than the counts. The names
+reflect that. Counting gives things like "fdqana" and "adricmicsogontq", the
+network gives "ell", "jak" and "adranahe". Closer to real names, still not good.
+An untrained network scores 4.40, worse than blind guessing, because its random
+starting numbers make it confidently wrong.
+
+```bash
+python3 -m examples.names
+```
+
+The next step is letting it look two or three letters back. Counting cannot
+follow, because the table grows too big to fill from 137 names. A network can.
+
 ## Layout
 
 - `firstgrad/value.py`: one number that remembers how it was made
 - `firstgrad/nn.py`: neuron, layer, network
 - `firstgrad/train.py`: loss, nudge step, training loop
 - `firstgrad/data.py`: XOR, spirals, hand-drawn digits with static
+- `firstgrad/text.py`: letters as numbers, counting baseline, name-writer
 - `firstgrad/optim.py`: plain, momentum and Adam nudging
 - `firstgrad/gradcheck.py`: the slow check that proves the fast one
