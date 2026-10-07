@@ -65,3 +65,57 @@ def network_surprise(model, names):
     ask = network_chances(model)
     ps = pairs(names)
     return -sum(math.log(ask(a)[b]) for a, b in ps) / len(ps)
+
+
+def windows(names, k):
+    """(the k letters before, the letter that came next) for every step.
+
+    Names are padded at the front with k start marks, so the first letter is
+    predicted from "nothing yet" rather than skipped.
+    """
+    out = []
+    for name in names:
+        chars = END * k + name + END
+        for i in range(k, len(chars)):
+            out.append((tuple(INDEX[c] for c in chars[i - k:i]), INDEX[chars[i]]))
+    return out
+
+
+def one_hot_window(context):
+    """Glue one one-hot letter per position into a single list of numbers."""
+    v = []
+    for i in context:
+        v.extend(one_hot(i))
+    return v
+
+
+def count_table_k(names, k, smoothing=1.0):
+    """Counting baseline that looks k letters back. Returns context -> chances."""
+    n = len(LETTERS)
+    counts = {}
+    for ctx, nxt in windows(names, k):
+        counts.setdefault(ctx, [smoothing] * n)[nxt] += 1
+    blank = [1.0 / n] * n
+
+    def ask(ctx):
+        row = counts.get(tuple(ctx))
+        return [c / sum(row) for c in row] if row else blank
+
+    return ask
+
+
+def surprise_k(ask, names, k):
+    """Average log loss of ask(context) -> chances over every step of names."""
+    ws = windows(names, k)
+    return -sum(math.log(ask(c)[b]) for c, b in ws) / len(ws)
+
+
+def write_name_k(ask, rng, k, limit=15):
+    ctx, out = (INDEX[END],) * k, ""
+    while len(out) < limit:
+        nxt = rng.choices(range(len(LETTERS)), weights=ask(ctx))[0]
+        if nxt == INDEX[END]:
+            break
+        out += LETTERS[nxt]
+        ctx = ctx[1:] + (nxt,)
+    return out

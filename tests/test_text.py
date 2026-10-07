@@ -61,3 +61,42 @@ class TestNetworkWriter(unittest.TestCase):
         self.assertGreater(untrained, learned + 1.0)
         self.assertLess(learned, math.log(27) - 0.3)
         self.assertLess(abs(learned - counted), 0.25)
+
+
+class TestLookingBack(unittest.TestCase):
+    def test_windows_pad_the_front_and_end_with_a_mark(self):
+        from firstgrad.text import windows
+
+        a, b, end = INDEX["a"], INDEX["b"], INDEX["."]
+        self.assertEqual(windows(["ab"], 2),
+                         [((end, end), a), ((end, a), b), ((a, b), end)])
+
+    def test_one_letter_back_matches_the_old_pairs(self):
+        from firstgrad.text import windows
+
+        old = pairs(NAMES[:10])
+        new = [(c[0], n) for c, n in windows(NAMES[:10], 1)]
+        self.assertEqual(old, new)
+
+    def test_one_hot_window_has_one_hot_per_position(self):
+        from firstgrad.text import one_hot_window
+
+        v = one_hot_window((1, 2, 3))
+        self.assertEqual(len(v), 27 * 3)
+        self.assertEqual(sum(v), 3.0)
+
+    def test_k_letter_counting_matches_old_counting_at_k_1(self):
+        from firstgrad.text import count_table_k, surprise_k
+
+        table = count_table(NAMES[::2])
+        ask = count_table_k(NAMES[::2], 1)
+        self.assertAlmostEqual(surprise_k(ask, NAMES[1::2], 1),
+                               average_surprise(table, NAMES[1::2]))
+
+    def test_unseen_context_falls_back_to_even_chances(self):
+        from firstgrad.text import count_table_k
+
+        ask = count_table_k(["ab"], 2)
+        chances = ask((INDEX["z"], INDEX["z"]))
+        self.assertAlmostEqual(sum(chances), 1.0)
+        self.assertAlmostEqual(chances[0], 1 / 27)
