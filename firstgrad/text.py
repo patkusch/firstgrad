@@ -45,3 +45,23 @@ def write_name(next_letter_chances, rng, limit=15):
             break
         out += LETTERS[current]
     return out
+
+
+def one_hot(i):
+    v = [0.0] * len(LETTERS)
+    v[i] = 1.0
+    return v
+
+
+def network_chances(model):
+    """Wrap a trained network so it answers like count_table: letter -> chances."""
+    from .train import softmax
+
+    return lambda a: [p.data for p in softmax(model(one_hot(a)))]
+
+
+def network_surprise(model, names):
+    """Same score as average_surprise, for a network. Lower is better."""
+    ask = network_chances(model)
+    ps = pairs(names)
+    return -sum(math.log(ask(a)[b]) for a, b in ps) / len(ps)

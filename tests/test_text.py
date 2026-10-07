@@ -32,3 +32,32 @@ class TestCounting(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestNetworkWriter(unittest.TestCase):
+    def train(self, names, epochs):
+        from firstgrad.nn import MLP
+        from firstgrad.optim import Adam
+        from firstgrad.text import one_hot
+        from firstgrad.train import cross_entropy, fit
+
+        ps = pairs(names)
+        xs, ys = [one_hot(a) for a, _ in ps], [b for _, b in ps]
+        model = MLP([len(LETTERS), 20, len(LETTERS)], seed=4)
+        fit(model, xs, ys, cross_entropy, epochs=epochs, batch_size=64,
+            optimizer=Adam(model.parameters(), lr=0.05))
+        return model
+
+    def test_network_learns_about_as_well_as_counting(self):
+        from firstgrad.text import network_surprise
+
+        train, held_out = NAMES[::2], NAMES[1::2]
+        model = self.train(train, epochs=100)
+        counted = average_surprise(count_table(train), held_out)
+        learned = network_surprise(model, held_out)
+        from firstgrad.nn import MLP
+
+        untrained = network_surprise(MLP([27, 20, 27], seed=4), held_out)
+        self.assertGreater(untrained, learned + 1.0)
+        self.assertLess(learned, math.log(27) - 0.3)
+        self.assertLess(abs(learned - counted), 0.25)
