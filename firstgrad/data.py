@@ -22,3 +22,36 @@ def two_spirals(n_per_arm=40, noise=0.05, seed=0, turns=1.5):
     order = list(range(len(xs)))
     rng.shuffle(order)
     return [xs[i] for i in order], [ys[i] for i in order]
+
+
+_DIGITS = """
+.###. #...# #..## #.#.# ##..# #...# .###.
+..#.. .##.. ..#.. ..#.. ..#.. ..#.. .###.
+.###. #...# ....# ...#. ..#.. .#... #####
+##### ...#. ..#.. ...#. ....# #...# .###.
+...#. ..##. .#.#. #..#. ##### ...#. ...#.
+##### #.... ####. ....# ....# #...# .###.
+..##. .#... #.... ####. #...# #...# .###.
+##### ....# ...#. ..#.. .#... .#... .#...
+.###. #...# #...# .###. #...# #...# .###.
+.###. #...# #...# .#### ....# ...#. .##..
+"""
+
+# ten hand-drawn digits, each 7 rows of 5 pixels, flattened to 35 numbers
+DIGIT_BITMAPS = [
+    [1.0 if ch == "#" else 0.0 for row in line.split() for ch in row]
+    for line in _DIGITS.strip().splitlines()
+]
+
+
+def noisy_digits(copies=8, flip=0.08, seed=0):
+    """Each digit `copies` times, every pixel flipped with chance `flip`."""
+    rng = random.Random(seed)
+    xs, ys = [], []
+    for _ in range(copies):
+        for digit, bitmap in enumerate(DIGIT_BITMAPS):
+            xs.append([1 - p if rng.random() < flip else p for p in bitmap])
+            ys.append(digit)
+    order = list(range(len(xs)))
+    rng.shuffle(order)
+    return [xs[i] for i in order], [ys[i] for i in order]

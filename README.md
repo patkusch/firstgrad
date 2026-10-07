@@ -51,10 +51,35 @@ getting 100% on the old ones but 92% on new ones shows a little memorising.
 python3 -m examples.hard_spirals
 ```
 
+## Reading handwritten digits
+
+Ten digits drawn by hand on a 5-by-7 grid. The network trains on copies where
+8% of the pixels are randomly flipped, like static on a screen, then is scored
+on fresh copies it has never seen. Guessing among ten digits would get 10%.
+
+| Static on the fresh digits | Right |
+|---|---|
+| 0% | 100% |
+| 5% | 98% |
+| 10% | 94% |
+| 15% | 90% |
+| 25% | 66% |
+| 35% | 37% |
+
+It was trained on 8% static, so it holds up well at that level and fades as
+the picture gets worse than anything it practised on. At 15% static the
+mix-ups are mostly the 8 being read as something else, which makes sense: an
+8 shares pixels with almost every other digit.
+
+```bash
+python3 -m examples.digits
+```
+
 ## Layout
 
 - `firstgrad/value.py`: one number that remembers how it was made
 - `firstgrad/nn.py`: neuron, layer, network
 - `firstgrad/train.py`: loss, nudge step, training loop
+- `firstgrad/data.py`: XOR, spirals, hand-drawn digits with static
 - `firstgrad/optim.py`: plain, momentum and Adam nudging
 - `firstgrad/gradcheck.py`: the slow check that proves the fast one

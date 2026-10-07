@@ -78,3 +78,50 @@ class TestOptimizers(unittest.TestCase):
             scores[name] = accuracy(model, xs, ys)
         self.assertLess(scores["sgd"], 0.75)
         self.assertGreater(scores["adam"], 0.9)
+
+
+class TestDigits(unittest.TestCase):
+    def test_bitmaps_are_ten_different_35_pixel_digits(self):
+        from firstgrad.data import DIGIT_BITMAPS
+
+        self.assertEqual(len(DIGIT_BITMAPS), 10)
+        self.assertTrue(all(len(b) == 35 for b in DIGIT_BITMAPS))
+        self.assertEqual(len({tuple(b) for b in DIGIT_BITMAPS}), 10)
+
+    def test_softmax_chances_add_to_one(self):
+        from firstgrad.train import softmax
+        from firstgrad.value import Value
+
+        chances = softmax([Value(1.0), Value(2.0), Value(-3.0)])
+        self.assertAlmostEqual(sum(c.data for c in chances), 1.0)
+
+    def test_cross_entropy_gradient_matches_brute_force(self):
+        from firstgrad.train import cross_entropy
+
+        model = MLP([3, 4, 3], seed=7)
+        x, y = [0.2, -0.5, 0.9], 2
+        loss = cross_entropy([model(x)], [y])
+        model.zero_grad()
+        loss.backward()
+        eps = 1e-6
+        for p in model.parameters():
+            claimed, original = p.grad, p.data
+            p.data = original + eps
+            up = cross_entropy([model(x)], [y]).data
+            p.data = original - eps
+            down = cross_entropy([model(x)], [y]).data
+            p.data = original
+            self.assertAlmostEqual(claimed, (up - down) / (2 * eps), places=5)
+
+    def test_reads_unseen_noisy_digits(self):
+        from firstgrad.data import noisy_digits
+        from firstgrad.optim import Adam
+        from firstgrad.train import class_accuracy, cross_entropy
+
+        xs, ys = noisy_digits(copies=8, flip=0.08, seed=0)
+        tx, ty = noisy_digits(copies=20, flip=0.08, seed=1)
+        model = MLP([35, 16, 10], seed=2)
+        fit(model, xs, ys, cross_entropy, epochs=100, batch_size=20,
+            optimizer=Adam(model.parameters(), lr=0.05))
+        self.assertGreater(class_accuracy(model, tx, ty), 0.85)
+        # guessing among ten would score 10%
