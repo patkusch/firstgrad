@@ -55,3 +55,19 @@ def noisy_digits(copies=8, flip=0.08, seed=0):
     order = list(range(len(xs)))
     rng.shuffle(order)
     return [xs[i] for i in order], [ys[i] for i in order]
+
+
+NAMES = """
+emma olivia ava mia sophia isabella amelia harper evelyn abigail emily ella
+elizabeth camila luna sofia avery mila aria scarlett penelope layla chloe
+victoria madison eleanor grace nora riley zoey hannah hazel lily ellie violet
+lillian zoe stella aurora natalia willow lucy savannah anna paisley audrey
+claire skylar bella aaliyah ruby maya leah kinsley naomi alice genesis nova
+liam noah oliver elijah james william benjamin lucas henry theodore jack levi
+alexander jackson mateo daniel michael mason sebastian ethan logan owen samuel
+jacob asher aiden john joseph wyatt david leo luke julian hudson grayson
+matthew ezra gabriel carter isaac jayden luca anthony dylan lincoln thomas
+maverick elias josiah charles caleb christopher ezekiel miles jaxon isaiah
+andrew joshua nathan nolan adrian cameron santiago eli aaron ryan angel cooper
+waylon easton kai christian landon colton roman axel brooks jonathan robert
+""".split()
