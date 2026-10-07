@@ -21,3 +21,25 @@ disagree, the build fails.
 ```bash
 python3 -m unittest discover -s tests -t .
 ```
+
+## Try it learn something
+
+```bash
+python3 -m examples.xor        # a problem one neuron cannot solve; 4/4 right
+python3 -m examples.spirals    # two interleaved spirals; 98% right, with a map
+```
+
+## What went wrong along the way
+
+The first spiral test used three full turns and got stuck at 62% right (barely
+better than a coin flip) after 400 rounds of plain nudging. Easing it to one
+and a half turns fixed it: 98% in 300 rounds. The lesson is that the nudging
+method matters as much as the network, and the next step is to try a smarter
+nudging method and see how much of the hard version it recovers.
+
+## Layout
+
+- `firstgrad/value.py`: one number that remembers how it was made
+- `firstgrad/nn.py`: neuron, layer, network
+- `firstgrad/train.py`: loss, nudge step, training loop
+- `firstgrad/gradcheck.py`: the slow check that proves the fast one
