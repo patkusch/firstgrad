@@ -100,8 +100,31 @@ starting numbers make it confidently wrong.
 python3 -m examples.names
 ```
 
-The next step is letting it look two or three letters back. Counting cannot
-follow, because the table grows too big to fill from 137 names. A network can.
+## Does remembering more letters help?
+
+Letting the writer look two or three letters back, with the same 68 training
+names and the same 69 unseen ones:
+
+| Letters back | Counting (unseen) | Network on names it trained on | Network (unseen) |
+|---|---|---|---|
+| 1 | 2.73 | 2.20 | 2.74 |
+| 2 | 2.99 | 1.49 | 3.28 |
+| 3 | 3.13 | 1.00 | 3.77 |
+
+Lower is better, and blind guessing is 3.30. More memory made it worse on new
+names. The gap between the second and fourth columns is the tell: at three
+letters back the network is far less surprised by names it practised on (1.00)
+than by new ones (3.77), which is worse than blind guessing. It memorised the
+68 names instead of learning how names work. The writing shows both sides of
+that: the three-back network produces "james", "broman" and "lincole", which
+are close to the training names, because it is partly copying them.
+
+```bash
+python3 -m examples.names_context
+```
+
+The fix is more names or a way to stop it memorising, and the next commit tries
+the second.
 
 ## Layout
 
