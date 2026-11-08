@@ -130,7 +130,7 @@ the second.
 
 - `firstgrad/value.py`: one number that remembers how it was made
 - `firstgrad/nn.py`: neuron, layer, network
-- `firstgrad/train.py`: loss, nudge step, training loop
+- `firstgrad/train.py`: loss, nudge step, training loop, weight decay, and stopping when a held-out set stops improving
 - `firstgrad/data.py`: XOR, spirals, hand-drawn digits with static
 - `firstgrad/text.py`: letters as numbers, counting baseline, name-writer
 - `firstgrad/optim.py`: plain, momentum and Adam nudging
