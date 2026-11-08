@@ -147,3 +147,23 @@ class WeightDecay(unittest.TestCase):
         fit(b, xs, ys, squared_error, lr=0.05, epochs=20, weight_decay=0.0)
         self.assertEqual([p.data for p in a.parameters()], [p.data for p in b.parameters()])
 
+
+class EarlyStopping(unittest.TestCase):
+    def test_the_network_is_put_back_to_its_best_held_out_moment(self):
+        import random
+        from firstgrad.nn import MLP
+        from firstgrad.train import fit_until_it_stops_helping, squared_error
+        rng = random.Random(3)
+        # a tiny noisy problem the network can memorise: y = x plus noise, 6 training points, 20 held-out
+        xs = [[rng.uniform(-1, 1)] for _ in range(6)]
+        ys = [x[0] + rng.gauss(0, 0.5) for x in xs]
+        hx = [[rng.uniform(-1, 1)] for _ in range(20)]
+        hy = [x[0] for x in hx]
+        model = MLP([1, 16, 1], seed=2)
+        history, held, best_epoch = fit_until_it_stops_helping(model, xs, ys, hx, hy, squared_error, lr=0.1,
+                                                               epochs=400, patience=30, check_every=5)
+        self.assertLessEqual(len(history), 400)
+        self.assertEqual(best_epoch % 5, 0)
+        now = squared_error([model(x) for x in hx], hy).data
+        self.assertAlmostEqual(now, min(held), places=9)  # restored to the best moment, not the last one
+

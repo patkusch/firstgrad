@@ -83,6 +83,33 @@ def fit(model, xs, ys, loss_fn, lr=0.1, epochs=200, log_every=0, optimizer=None,
     return history
 
 
+def fit_until_it_stops_helping(model, xs, ys, held_xs, held_ys, loss_fn, *, patience=20, check_every=5,
+                               **fit_kwargs):
+    """Train, but watch the loss on names (or anything) the network never trains on, and stop when that stops
+    falling. The network is put back to how it was at its best moment.
+
+    Memorising shows up as the training loss falling while the held-out loss rises. This catches the turn.
+    Returns (training history, held-out history, the epoch the network was put back to).
+    """
+    history, held_history = [], []
+    best, best_epoch, best_params, since = float("inf"), 0, None, 0
+    epochs = fit_kwargs.pop("epochs", 200)
+    for start in range(0, epochs, check_every):
+        history += fit(model, xs, ys, loss_fn, epochs=min(check_every, epochs - start), seed=start, **fit_kwargs)
+        held = loss_fn([model(x) for x in held_xs], held_ys).data
+        held_history.append(held)
+        if held < best:
+            best, best_epoch, since = held, len(history), 0
+            best_params = [p.data for p in model.parameters()]
+        else:
+            since += check_every
+            if since >= patience:
+                break
+    for p, saved in zip(model.parameters(), best_params):
+        p.data = saved
+    return history, held_history, best_epoch
+
+
 def accuracy(model, xs, ys):
     right = sum((model(x).data > 0) == (y == 1) for x, y in zip(xs, ys))
     return right / len(xs)
