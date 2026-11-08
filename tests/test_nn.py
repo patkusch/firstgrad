@@ -125,3 +125,25 @@ class TestDigits(unittest.TestCase):
             optimizer=Adam(model.parameters(), lr=0.05))
         self.assertGreater(class_accuracy(model, tx, ty), 0.85)
         # guessing among ten would score 10%
+
+
+class WeightDecay(unittest.TestCase):
+    def test_decay_pulls_the_numbers_towards_zero(self):
+        from firstgrad.nn import MLP
+        from firstgrad.train import fit, squared_error
+        xs, ys = [[1.0], [-1.0]], [1.0, -1.0]
+        plain, decayed = MLP([1, 4, 1], seed=1), MLP([1, 4, 1], seed=1)
+        fit(plain, xs, ys, squared_error, lr=0.05, epochs=50)
+        fit(decayed, xs, ys, squared_error, lr=0.05, epochs=50, weight_decay=0.05)
+        size = lambda m: sum(abs(p.data) for p in m.parameters())
+        self.assertLess(size(decayed), size(plain))
+
+    def test_no_decay_leaves_training_exactly_as_before(self):
+        from firstgrad.nn import MLP
+        from firstgrad.train import fit, squared_error
+        xs, ys = [[1.0], [-1.0]], [1.0, -1.0]
+        a, b = MLP([1, 4, 1], seed=1), MLP([1, 4, 1], seed=1)
+        fit(a, xs, ys, squared_error, lr=0.05, epochs=20)
+        fit(b, xs, ys, squared_error, lr=0.05, epochs=20, weight_decay=0.0)
+        self.assertEqual([p.data for p in a.parameters()], [p.data for p in b.parameters()])
+

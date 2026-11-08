@@ -46,11 +46,16 @@ def step(model, lr):
 
 
 def fit(model, xs, ys, loss_fn, lr=0.1, epochs=200, log_every=0, optimizer=None,
-        batch_size=None, seed=0):
+        batch_size=None, seed=0, weight_decay=0.0):
     """Plain descent at rate lr unless an optimizer from optim.py is given.
 
     With batch_size, each nudge looks at a random handful of examples instead
     of all of them: noisier, but many more nudges per pass over the data.
+
+    weight_decay shrinks every number a little towards zero after each nudge
+    (0.01 means one per cent). Big numbers are how a network memorises odd
+    cases, so a steady pull towards zero makes it keep only what many examples
+    agree on.
     """
     history = []
     rng = random.Random(seed)
@@ -69,6 +74,9 @@ def fit(model, xs, ys, loss_fn, lr=0.1, epochs=200, log_every=0, optimizer=None,
             optimizer.step()
         else:
             step(model, lr)
+        if weight_decay:
+            for p in model.parameters():
+                p.data *= 1 - weight_decay
         history.append(loss.data)
         if log_every and epoch % log_every == 0:
             print(f"epoch {epoch:4d}  loss {loss.data:.4f}")
