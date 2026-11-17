@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "firstgrad"
+abstract: "A neural network library written from scratch in plain Python, small enough to read in one sitting, with every result measured on examples it never trained on."
+type: software
+authors:
+  - family-names: "Kusch"
+    given-names: "Patricia"
+repository-code: "https://github.com/patkusch/firstgrad"
+license: MIT
