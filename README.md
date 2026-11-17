@@ -1,5 +1,7 @@
 # firstgrad
 
+[![tests](https://github.com/patkusch/firstgrad/actions/workflows/ci.yml/badge.svg)](https://github.com/patkusch/firstgrad/actions/workflows/ci.yml)
+
 A neural network library small enough to read in one sitting, with no ML
 libraries underneath. It exists to answer one question: how does a model learn?
 
